@@ -93,7 +93,7 @@
                                     <argument value="$APP_ROOT/Resources/Vidar"/>
                                     <argument value="$APP_ROOT/Resources/Vidar"/>
                                     <argument value="$APP_ROOT/Resources/JRGSS"/>
-                                    <runtime dir="/Library/Java/JavaVirtualMachines/jdk1.8.0_31.jdk/Contents/Home" />
+                                    <!--<runtime dir="/Library/Java/JavaVirtualMachines/jdk1.8.0_31.jdk/Contents/Home" />-->
                                     <classpath file="target/Desktop-1.0-SNAPSHOT.jar"/>
                                 </bundleapp>
                             </tasks>

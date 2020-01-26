@@ -43,7 +43,6 @@
                   <argument />
                   <argument />
                   <argument />
-                  <runtime />
                   <classpath />
                 </bundleapp>
               </tasks>
