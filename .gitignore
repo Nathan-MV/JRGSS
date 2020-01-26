@@ -11,3 +11,4 @@
 .idea
 target/
 */.libs/*
+*.code-workspace
