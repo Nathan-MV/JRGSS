@@ -5,7 +5,7 @@ import static com.badlogic.gdx.Input.Keys.*;
 
 import com.badlogic.gdx.Input;
 import com.google.common.collect.ImmutableMap;
-import com.sun.org.apache.xpath.internal.operations.Bool;
+//import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.jrgss.JRGSSApplication;
 import org.jrgss.api.Graphics;
 import org.jruby.RubyString;

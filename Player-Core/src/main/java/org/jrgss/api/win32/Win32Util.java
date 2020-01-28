@@ -1,6 +1,6 @@
 package org.jrgss.api.win32;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
+//import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.jrgss.api.win32.Win32API;
 import org.jruby.Ruby;
 import org.jruby.RubyBoolean;
