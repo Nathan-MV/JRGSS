@@ -17,17 +17,17 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.14.0</version>
+            <version>1.18.10</version>
         </dependency>
         <dependency>
             <groupId>org.jruby</groupId>
             <artifactId>jruby-complete</artifactId>
-            <version>1.7.19</version>
+            <version>9.2.9.0</version>
         </dependency>
         <dependency>
             <groupId>org.ini4j</groupId>
             <artifactId>ini4j</artifactId>
-            <version>0.5.2</version>
+            <version>0.5.4</version>
         </dependency>
         <dependency>
             <groupId>libgdx</groupId>
@@ -42,12 +42,12 @@
         <dependency>
             <groupId>org.jetlang</groupId>
             <artifactId>jetlang</artifactId>
-            <version>0.2.12</version>
+            <version>0.2.23</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>18.0</version>
+            <version>28.2-jre</version>
         </dependency>
     </dependencies>
 
