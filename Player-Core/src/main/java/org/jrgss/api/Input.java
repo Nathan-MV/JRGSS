@@ -179,7 +179,6 @@ public class Input extends RubyObject {
     @JRubyConstant
     public static final String F5 = "F5", F6 = "F6", F7 = "F7", F8 = "F8", F9 = "F9";
 
-
     //Default bindings. These can be overwritten later when bindings are read from preferences
     private final static HashMap<String, int[]> bindings = new HashMap<>();
 
@@ -188,7 +187,7 @@ public class Input extends RubyObject {
         bindings.put(LEFT, new int[]{Keys.LEFT, XBOXButtons.LEFT.key()});
         bindings.put(RIGHT, new int[]{Keys.RIGHT, XBOXButtons.RIGHT.key()});
         bindings.put(UP, new int[]{Keys.UP, XBOXButtons.UP.key()});
-        bindings.put(C, new int[]{Keys.ENTER, XBOXButtons.A.key()});
+        bindings.put(C, new int[]{Keys.SPACE, Keys.ENTER, XBOXButtons.A.key()});
         bindings.put(B, new int[]{Keys.ESCAPE, XBOXButtons.B.key()});
         bindings.put(L, new int[]{Keys.Q, XBOXButtons.LBUMP.key()});
         bindings.put(R, new int[]{Keys.W, XBOXButtons.RBUMP.key()});
