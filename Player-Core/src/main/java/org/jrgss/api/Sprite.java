@@ -126,7 +126,7 @@ public class Sprite extends AbstractRenderable {
 
     public void dispose() {
         super.dispose();
-        Gdx.app.log("Sprint", "Dispose called");
+        Gdx.app.log("Sprite", "Dispose called");
     }
 
     public void setX(int x) {
