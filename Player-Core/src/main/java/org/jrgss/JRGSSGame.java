@@ -32,12 +32,14 @@ import java.util.jar.JarFile;
  */
 public class JRGSSGame implements JRGSSApplicationListener {
     ScriptingContainer scriptingContainer;
+    //my problem might be that some of these classes are not modules
     final String[] BUILTINS = new String[] {
-            "Audio", "Bitmap", "Graphics",
+            "JAudio", "Bitmap", "Graphics",
             "Plane", "Rect", "RGSSError", "Sprite",
             "Tilemap", "Tone", "Viewport", "Window",
             "RGSSReset"
     };
+
     public static final Queue<FutureTask<?>> glRunnables = new ConcurrentLinkedQueue<>();
 
     static JRGSSMain mainBlock;

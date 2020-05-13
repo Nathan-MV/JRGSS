@@ -75,7 +75,7 @@ public class JRGSSDesktop extends LwjglApplication implements JRGSSApplication{
         public void run() {
             while(!killAudio) {
                 if (audio != null) {
-                    synchronized (org.jrgss.api.Audio.class) {
+                    synchronized (org.jrgss.api.JAudio.class) {
                         audio.update();
 
                     }

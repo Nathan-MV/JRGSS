@@ -11,7 +11,7 @@ import java.util.Map;
 /**
  * Created by matty on 6/27/14.
  */
-public class Audio {
+public class JAudio {
 
     public static final Object sync = new Object();
 
@@ -128,7 +128,7 @@ public class Audio {
             se = Gdx.audio.newSound(FileUtil.loadAudio(filename));
             se_cache.put(filename, se);
         }
-        Audio.se = se;
+        JAudio.se = se;
         synchronized (sync) {
             se.play(volume / 100f, pitch / 100f, 0);
         }
