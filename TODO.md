@@ -1,11 +1,5 @@
 # TODO
 
-* Command line options
-	* -h --help : print the list of options here
-	* -g --gameDirectory : where the game to run is located if not in the current directory
-	* -r --rtpDirectory : where the rtp is if not in the game directory
-	* -v --verbose : verbose output for debugging - you can specify an number of 'v' and it will increase verbosity level (java code only)
-	* --allowRubyPrints : by default, we have turned off ruby prints which are often just debug. This will turn it back on.
 * Proper printing framework to support the above log levels
 	* This will also be the time where we remove some of the annoying prints that happens currently
 * use case insensitive variable lookup in for the Game.ini file
