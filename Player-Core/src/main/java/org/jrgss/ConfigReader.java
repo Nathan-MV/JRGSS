@@ -6,6 +6,9 @@ import org.ini4j.Config;
 
 import java.io.File;
 
+import org.jrgss.JRGSSLogger;
+import static org.jrgss.JRGSSLogger.LogLevels.*;
+
 /**
  * @author matt
  * @date 8/25/14
@@ -37,17 +40,20 @@ public class ConfigReader {
     public RGSSVersion getRGSSVersion() {
         String library = ini.get("game", "library");
         if (library == null) {
-            System.out.println("Could not determine RGSS Version. Using default!");
+            JRGSSLogger.println(DEBUG,"INI Library Key is null");
+            JRGSSLogger.println(INFO,"Could not determine RGSS Version. Using default!");
             return RGSSVersion.defaultVersion();
         }
         int dllIndex = library.toLowerCase().indexOf("rgss");
         if (dllIndex == -1) {
-            System.out.println("Could not determine RGSS Version. Using default!");
+            JRGSSLogger.println(DEBUG,"dll name does not have rgss in it");
+            JRGSSLogger.println(INFO,"Could not determine RGSS Version. Using default!");
             return RGSSVersion.defaultVersion();
         }
         RGSSVersion version = RGSSVersion.parse(library.substring(dllIndex));
         if(version == null) {
-            System.out.println("Could not determine RGSS Version. Using default!");
+            JRGSSLogger.println(DEBUG,"Parsing of dll name for version failed");
+            JRGSSLogger.println(INFO,"Could not determine RGSS Version. Using default!");
             return RGSSVersion.defaultVersion();
         }
         return version;

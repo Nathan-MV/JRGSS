@@ -26,8 +26,6 @@ public class Desktop {
     public static void main(String[] args) {
         try {
             parseCLIArgs(args);
-            JRGSSLogger.println(ERROR,"Test ERROR Print");
-            JRGSSLogger.println(INFO,"Test INFO Print");
             LwjglApplicationConfiguration cfg = new LwjglApplicationConfiguration();
 
             cfg.title = "Title";
@@ -44,7 +42,7 @@ public class Desktop {
 
             } else {
                 FileUtil.onCaseSensitiveFileSystem = true;
-                System.out.println("Using Case Insensitive File lookups!");
+                JRGSSLogger.println(DEBUG,"Using Case Insensitive File lookups!");
             }
             ConfigReader config = new ConfigReader(cliOptions.get("gameDirectory") + File.separator + "Game.ini");
             cfg.title = config.getTitle();
@@ -52,6 +50,7 @@ public class Desktop {
             new JRGSSDesktop(new JRGSSGame(cliOptions.get("gameDirectory"), cliOptions.get("rtpDirectory"), config), cfg);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "Encountered an unexpected error: "+e.getMessage(),"Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace(System.err);
         }
     }
 
@@ -98,9 +97,9 @@ public class Desktop {
     };
     public static void parseCLIArgs(String[] args){
 
+        //just quick and easy-to-use lookup tables for use while we are parsing the opts
         Hashtable<String, CliOption> longOpts = new Hashtable<String, CliOption>();
         Hashtable<String, CliOption> shortOpts = new Hashtable<String, CliOption>();
-
         //lets get our lookup tables set up
         for (CliOption opt : availableCliOptions){
             longOpts.put(opt.longName,opt);
@@ -108,16 +107,18 @@ public class Desktop {
                 shortOpts.put(opt.shortName,opt);
         }
 
+        //Parsing through all the opts and saving their value
+        //we get the name of the opt eg 'verbose' and then look it up in the above hash table
+        //then the object from the hash table stores the string in .value for use to use afterwards
         for (int i=0; i<args.length; i++){
-            //First find what argument we are trying to parse
             String arg = args[i];
             CliOption opt = null;
             if( arg.equals("-h") || arg.equals("--help") ){
                 printHelp();
-            } else if( arg.indexOf("--") == 0 ){
+            } else if( arg.indexOf("--") == 0 ){ // long option
                 arg = arg.substring(2);
                 opt = longOpts.get(arg);
-            }else if( arg.indexOf("-") == 0 ){
+            }else if( arg.indexOf("-") == 0 ){ // short option
                 arg = arg.substring(1);
                 opt = shortOpts.get(arg);
             }
@@ -127,6 +128,7 @@ public class Desktop {
             }
 
             //now handle setting the value of the argument
+            //either the argument is meant to consume the next argument, or it is just a boolean flag
             if( opt.consumesNextArg && opt.nextArgConsumedOptional )
                 if( i+1<args.length && args[i+1].indexOf("-")!=0 ){
                     opt.value = args[i+1];
@@ -142,11 +144,11 @@ public class Desktop {
                     out.println("Missing argument for \""+arg+'"');
                     printHelp();
                 }
-            else
+            else // does not consume - is just a boolean flag
                 opt.value = opt.defaultValueIfSeen;
         }
 
-        //Now that we have parsed all the values out of the cli args, lets do some dependency cleanup
+        //Now that we have parsed all the values out of the cli args, lets do some dependency cleanup and handle the values
         { // defualt the rtpDirctory to the game directory if the user has not already given a location
             CliOption ropt = longOpts.get("rtpDirectory");
             if( ropt.value == null )
@@ -168,7 +170,7 @@ public class Desktop {
             }
         }
 
-        //we can put the final values into th hashtable
+        //we put the final values into the classwide hashtable for use elsewhere
         for (CliOption opt : availableCliOptions){
             cliOptions.put(opt.longName,opt.value);
         }

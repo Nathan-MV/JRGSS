@@ -18,6 +18,8 @@ import lombok.ToString;
 import org.jrgss.FileUtil;
 import org.jrgss.JRGSSGame;
 import org.jrgss.shaders.TextShaderProgram;
+import org.jrgss.JRGSSLogger;
+import static org.jrgss.JRGSSLogger.LogLevels.*;
 
 import java.nio.IntBuffer;
 
@@ -174,7 +176,7 @@ public class Bitmap {
         hue = (hue / 360f) - ((int) (hue / 360f));
         if (hue < 0) hue = 1 - hue;
         final float finalHue = hue;
-        Gdx.app.log("Bitmap", "Hue change to " + hue);
+        JRGSSLogger.println(DEBUG,"Hue change to " + hue);
         JRGSSGame.runWithGLContext(new Runnable() {
             @Override
             public void run() {
@@ -284,7 +286,7 @@ public class Bitmap {
 
     public Rect text_size(final String str) {
         if(font.bitmapFont == null) {
-            Gdx.app.log("Bitmap","Bitmap font is null.");
+            JRGSSLogger.println(ERROR,"Bitmap font is null.");
         }
         float multiplier = str.length() == 1?0.9f:0.95f;
         GlyphLayout layout = new GlyphLayout(font.outlineFont, str);
@@ -297,12 +299,12 @@ public class Bitmap {
 
     public Pixmap getPixmap() {
         if (pixmap == null) {
-            Gdx.app.log("Bitmap", "Generating Pixmap. Loaded from " + path);
+            JRGSSLogger.println(DEBUG,"Generating Pixmap. Loaded from " + path);
             frameBuffer.begin();
             Pixmap ret = new Pixmap(getWidth(), getHeight(), Pixmap.Format.RGBA8888);
             byte[] bytes = ScreenUtils.getFrameBufferPixels(0, 0, getWidth(), getHeight(), true);
             ret.getPixels().put(bytes).rewind();
-            Gdx.app.log("Bitmap", "Returned Pixmap is " + ret.getFormat());
+            JRGSSLogger.println(DEBUG,"Returned Pixmap is " + ret.getFormat());
             frameBuffer.end();
             pixmap = ret;
             return ret;
@@ -346,7 +348,6 @@ public class Bitmap {
     public void dispose() {
         if(isDisposed) return;
         isDisposed = true;
-        //Gdx.app.log("Bitmap","Calling dispose for "+path);
         if (frameBuffer != null) {
             runWithGLContext(new Runnable() {
                 FrameBuffer fb = frameBuffer;
@@ -370,7 +371,7 @@ public class Bitmap {
         JRGSSGame.runWithGLContext(() -> {
             Pixmap p = getPixmap();
             IntBuffer inPixels = p.getPixels().asIntBuffer();
-            Gdx.app.log("Graphics", "Length of IntBuffer = " + inPixels.remaining());
+            JRGSSLogger.println(DEBUG,"Length of IntBuffer = " + inPixels.remaining());
             IntBuffer outPixels = IntBuffer.allocate(inPixels.remaining());
             blur(inPixels, outPixels, getWidth(), getHeight(), 2);
             blur(outPixels, inPixels, getHeight(), getWidth(), 2);
@@ -449,7 +450,8 @@ public class Bitmap {
 
     public void render(SpriteBatch batch, int x, int y, int srcx, int srcy, int srcwidth, int srcheight) {
         if (isDisposed) {
-            Gdx.app.log("Bitmap", "Trying to draw a disposed Bitmap. BUG");
+            JRGSSLogger.printBuffer();
+            JRGSSLogger.println(ERROR,"Trying to draw a disposed Bitmap. BUG");
             throw new RuntimeException("Trying to draw a disposed Bitmap");
         }
         batch.draw(frameBuffer.getColorBufferTexture(), x, y, srcx, (height - srcheight) - srcy,
@@ -528,7 +530,7 @@ public class Bitmap {
                           final int align) {
         final String string = obj.toString();
         if(obj.toString().length() > 10) {
-            Gdx.app.log("Bitmap", String.format("%d, %d, %d, %d, %d, %s", x, y, width, height, align, obj));
+            JRGSSLogger.println(DEBUG, String.format("%d, %d, %d, %d, %d, %s", x, y, width, height, align, obj));
         }
         JRGSSGame.runWithGLContext(() -> {
             BitmapFont f = font.getBitmapFont();
@@ -552,7 +554,7 @@ public class Bitmap {
                 drawX += width - layout.width;
             } else if (align == 1) {
                 if(string.length() > 10) {
-                    Gdx.app.log("Bitmap", "Width is "+layout.width);
+                    JRGSSLogger.println(DEBUG,"Width is "+layout.width);
                 }
                 drawX += (width - (layout.width)) / 2;
             }
@@ -620,7 +622,7 @@ public class Bitmap {
 
     public void setFont(Font font) {
         if(font.getBitmapFont() == null) {
-            Gdx.app.log("Bitmap", "Font is null!");
+            JRGSSLogger.println(ERROR,"Font is null!");
         }
     }
 

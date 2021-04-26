@@ -4,6 +4,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import org.jrgss.FileUtil;
+import org.jrgss.JRGSSLogger;
+import static org.jrgss.JRGSSLogger.LogLevels.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -37,7 +39,7 @@ public class JAudio {
     }
 
     public synchronized static void bgm_play(String filename, int volume, int pitch, int pos) {
-        Gdx.app.log("Audio", "Play BGM "+filename+" @ volume ="+ volume+", pitch ="+pitch+", pos = "+pos);
+        JRGSSLogger.println(INFO,"Play BGM "+filename+" @ volume ="+ volume+", pitch ="+pitch+", pos = "+pos);
 
         if(bgm != null && !bgmFilename.equals(filename)) {
             bgm_stop();
@@ -72,7 +74,7 @@ public class JAudio {
         if(bgs != null) {
             bgs_stop();
         }
-        Gdx.app.log("Audio", "Play BGS "+filename+" @ volume ="+ volume+", pitch ="+pitch+", pos = "+pos);
+        JRGSSLogger.println(INFO,"Play BGS "+filename+" @ volume ="+ volume+", pitch ="+pitch+", pos = "+pos);
         bgs = Gdx.audio.newMusic(FileUtil.loadAudio(filename));
         bgs.setLooping(true);
         bgs.setVolume(volume/100f);
@@ -122,7 +124,7 @@ public class JAudio {
     }
 
     public synchronized static void se_play(String filename, int volume, int pitch) {
-        Gdx.app.log("Audio", "Play SE "+filename+" @ volume ="+ volume+", pitch ="+pitch);
+        JRGSSLogger.println(INFO,"Play SE "+filename+" @ volume ="+ volume+", pitch ="+pitch);
         Sound se = se_cache.get(filename);
         if(se == null) {
             se = Gdx.audio.newSound(FileUtil.loadAudio(filename));

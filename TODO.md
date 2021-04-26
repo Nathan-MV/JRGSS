@@ -1,17 +1,25 @@
 # TODO
 
-* Proper printing framework to support the above log levels
-	* This will also be the time where we remove some of the annoying prints that happens currently
-* use case insensitive variable lookup in for the Game.ini file
-	* we should not force using Library= when vxa outputs library= by default
 * Use a thin shim ruby module layer that just directly calls the java methods
 	* This will allow the ruby scripts to override and modify behavior
 	* Not allowing the overriding will prevent the more extensive games that do more than just vanilla operations
 	* Ideally this is not required and we can have JRuby allow dynamic rebinding of Java implementations, but this seems to be a limitation of that implementation
+	* Optionally, try having the clkass import inside a module declaration of the same name - it might work? (JRGSSGame.java : loadRGSSModule(name))
+* Dynamic resizing of games
+	* modes : pixel perfect upscalling, letter/pillar boxing, full fill
+	* probably default to pixel perfect upscalling
+* clean up having the resize code set the draw size to 6 different places on every event - is it really needed to do it so many times?
+* Add comments to this abomination of code - a lot of the things in the api folder are sprinked heavily with strange hard-coded numbers and math
+	* Window.java
+	* Tilemap.java
+* Finish adding in prints throughout the code to help with debugging
+* Have a flag to dump all scripts to a folder ( --dumpAllScripts )
+* Redirect all ruby prints to the logging class at INFO level so we are not spamming the console
+
 
 # Stretch Goals
 
-* Main Menu that is blank and not running a game at all
+* Main Window that is blank and not running a game at all if launched all by itself
 	* It would be nice to have a window that has just a few tools available such as selecting a game to try running or simply extracting the data from the game archive
 	* These options we would add could be served just as well by command line options, but it would be nice to make it easy for less technical people
 * Integrated Debugger
@@ -25,22 +33,8 @@
 
 * Main Menu - selection of options highlight box is in the wrong location
 	* is on the top left out of the window frame
-
-* after running the game once, this happens
-	glop102@genServer /media/TerminalDogma/Executables/hentai games/MagicalCamp047b $ ./linux.sh 
-	Using Case Insensitive File lookups!
-	Running on Linux
-	Key is 48e5
-	Offset is 12
-	Exception in thread "LWJGL Application" java.lang.ExceptionInInitializerError
-		at com.badlogic.gdx.backends.lwjgl.LwjglGraphics.setVSync(LwjglGraphics.java:446)
-		at com.badlogic.gdx.backends.lwjgl.LwjglApplication$1.run(LwjglApplication.java:118)
-	Caused by: java.lang.NullPointerException
-		at org.lwjgl.opengl.LinuxDisplay.getAvailableDisplayModes(LinuxDisplay.java:950)
-		at org.lwjgl.opengl.LinuxDisplay.init(LinuxDisplay.java:738)
-		at org.lwjgl.opengl.Display.<clinit>(Display.java:138)
-		... 2 more
-	AL lib: (EE) alc_cleanup: 1 device not closed
-* need to clean up all audio channels when shutting down
-* https://stackoverflow.com/questions/16161714/what-does-al-lib-alc-cleanup-1-device-not-closed-mean
-* calling System.exit() does not let resources get cleaned up properly - maybe this is the problem? Perhaps we are simply never calling Gdx.app.exit()?
+* Loading a save game crashes from attempting access a method that does not exist
+	* undefined method xsize' for #<Table:0x59e06b06>
+	* RUBY.kinu_make_shadows(Kinu2 - Three-Tiered Shadows v1.01:285)
+* Audio on the main menu is not playing
+	* debug seems to show the requested volume is 0?

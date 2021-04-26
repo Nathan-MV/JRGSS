@@ -5,6 +5,8 @@ import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import lombok.Data;
 import lombok.ToString;
+import org.jrgss.JRGSSLogger;
+import static org.jrgss.JRGSSLogger.LogLevels.*;
 
 /**
  * Created by matty on 6/27/14.
@@ -25,7 +27,7 @@ public class Plane extends Sprite {
     @Override
     public void render(SpriteBatch _) {
         if (bitmap != null && visible && opacity > 0 && (viewport == null || viewport.isVisible())) {
-            //Gdx.app.log("Sprite", String.format("Rendering: %s, %d, %d, %d, %d", viewport, x, y, ox, oy));
+            JRGSSLogger.println(PEDANTIC, String.format("Rendering: %s, %d, %d, %d, %d", viewport, x, y, ox, oy));
 
             batch.enableBlending();
             if(viewport != null) viewport.begin(batch);
