@@ -14,6 +14,8 @@ import java.lang.reflect.Method;
 import java.util.Hashtable;
 import static java.lang.System.out;
 import java.lang.System;
+import org.jrgss.JRGSSLogger;
+import static org.jrgss.JRGSSLogger.LogLevels.*;
 
 /**
  * Created by mcanterb on 6/26/14.
@@ -24,6 +26,8 @@ public class Desktop {
     public static void main(String[] args) {
         try {
             parseCLIArgs(args);
+            JRGSSLogger.println(ERROR,"Test ERROR Print");
+            JRGSSLogger.println(INFO,"Test INFO Print");
             LwjglApplicationConfiguration cfg = new LwjglApplicationConfiguration();
 
             cfg.title = "Title";
@@ -87,10 +91,10 @@ public class Desktop {
         }
     }
     static CliOption[] availableCliOptions = {
-        new CliOption("gameDirectory","g","The directory of the game to run", ".", true, false, null),
-        new CliOption("rtpDirectory","r","The directory of the rtp of the game. It defaults to the same directory as the game", null, true, false, null),
-        new CliOption("verbose","v","turns on debug prints for the java code", "0", true, true, "1"),
-        new CliOption("allowRubyPrints",null,"turns on prints coming from ruby code", "0", false, false, "1")
+        new CliOption("gameDirectory","g","The directory of the game to run.", ".", true, false, null),
+        new CliOption("rtpDirectory","r","The directory of the rtp of the game. It defaults to the same directory as the game.", null, true, false, null),
+        new CliOption("verbose","v","turns on debug prints for the java code. Can choose a level of ERROR,INFO,DEBUG,PEDANTIC.", null, true, true, "DEBUG"),
+        new CliOption("allowRubyPrints",null,"turns on prints coming from ruby code. They are printed at the INFO log level.", "0", false, false, "1")
     };
     public static void parseCLIArgs(String[] args){
 
@@ -118,7 +122,7 @@ public class Desktop {
                 opt = shortOpts.get(arg);
             }
             if( opt == null ){
-                out.println("Unknown Option \""+arg+'"');
+                out.println("Unknown CLI Option \""+arg+'"');
                 printHelp();
             }
 
@@ -147,6 +151,21 @@ public class Desktop {
             CliOption ropt = longOpts.get("rtpDirectory");
             if( ropt.value == null )
                 ropt.value = longOpts.get("gameDirectory").value;
+        }
+        { // debug verbosity prints
+            CliOption vopt = longOpts.get("verbose");
+            if( vopt.value == null ){
+                vopt.value = "ERROR"; // just filling in this to not have an error with the hashtable of the cli option values
+            }else{
+                JRGSSLogger.printCallerInfo = true; // even if we only want error prints, it would be nice to have the stack traceback
+                vopt.value = vopt.value.toUpperCase();
+                try{
+                    JRGSSLogger.loggingLevel = JRGSSLogger.LogLevels.valueOf(vopt.value);
+                }catch(Exception e){
+                    JRGSSLogger.println(ERROR,"Unable to parse verbose level '"+vopt.value+"' on the command line - assuming DEBUG");
+                    JRGSSLogger.loggingLevel = DEBUG;
+                }
+            }
         }
 
         //we can put the final values into th hashtable

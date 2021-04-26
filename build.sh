@@ -1,4 +1,6 @@
 #!/bin/bash
+set -e #stop bothing to build if something errors out
+
 cd Player-Core
 mvn clean install
 cd ../Player-Desktop
