@@ -128,7 +128,7 @@ public class Sprite extends AbstractRenderable {
 
     public void dispose() {
         super.dispose();
-        JRGSSLogger.println(DEBUG,"Dispose called");
+        JRGSSLogger.println(PEDANTIC,"Dispose called");
     }
 
     public void setX(int x) {

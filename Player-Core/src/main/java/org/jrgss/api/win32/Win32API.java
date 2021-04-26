@@ -2,6 +2,7 @@ package org.jrgss.api.win32;
 
 import com.badlogic.gdx.Gdx;
 import lombok.ToString;
+import org.ini4j.Wini;
 import org.jruby.*;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
@@ -10,10 +11,16 @@ import org.jruby.runtime.builtin.IRubyObject;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
+import java.io.File;
+
+import org.jrgss.JRGSSLogger;
+import static org.jrgss.JRGSSLogger.LogLevels.*;
 
 /**
  * @author matt
  * @date 8/20/14
+ * This is a class to load functions out of the dll runtime.
+ * Since we are trying to be platform agnostic, we have some hand-coded specific functions that are used instead.
  */
 @ToString
 @JRubyClass(name = "Win32API")
@@ -54,7 +61,7 @@ public class Win32API extends RubyObject{
         }
         DLLImpl m = funcEntries.get(new DLLEntry(dll, func, spec));
         if(m == null) {
-            Gdx.app.log("Win32API","Returning stub for "+this.toString());
+            JRGSSLogger.println(DEBUG,"DLL Function not found - Returning stub for "+this.toString());
             m = STUB_METHOD;
         }
         impl = m;
@@ -63,6 +70,16 @@ public class Win32API extends RubyObject{
 
     @JRubyMethod(name = "call", alias = "Call", optional = 16)
     public IRubyObject call(ThreadContext context, IRubyObject[] args) {
+        if(impl == STUB_METHOD){
+            switch(this.func){
+                case "GetPrivateProfileInt":
+                    return GetPrivateProfileInt(context,args);
+                case "WritePrivateProfileString":
+                    return WritePrivateProfileString(context,args);
+                default:
+                    JRGSSLogger.println(ERROR,"Stub Called for "+this.toString());
+            }
+        }
         return impl.call(this, context, args);
     }
 
@@ -95,6 +112,52 @@ public class Win32API extends RubyObject{
         }catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    //TODO - This only supports parsing out values as ints. We need to preserve the argument type for the DLL load and parse the right object type out.
+    public IRubyObject GetPrivateProfileInt(ThreadContext context, IRubyObject[] args){
+
+        String section = args[0].asJavaString();
+        String key = args[1].asJavaString();
+        int defaultVal = args[2].toJava(int.class);
+        String filename = args[3].asJavaString();
+        String out = null;
+        JRGSSLogger.println(PEDANTIC,"Internal GetPrivateProfileInt() : "+filename);
+
+        Wini ini = new Wini();
+        ini.getConfig().setLowerCaseOption(true); // make all options lower case to be more general
+        ini.getConfig().setLowerCaseSection(true); // make all sections lower case to be more general
+        try{
+            ini.load(new File(filename));
+            out = ini.get(section.toLowerCase(), key.toLowerCase());
+            JRGSSLogger.println(DEBUG,"INI Read : "+out+" : "+filename);
+        }catch(Exception e){
+            JRGSSLogger.println(ERROR,"INI Read : "+filename);
+        }
+        if(out == null)
+            return runtime.newFixnum(defaultVal);
+        return runtime.newFixnum(Integer.parseInt(out));
+    }
+    //TODO - this only supports the value being a string. When getting support for the above read function done, it should be adapted to work here as well.
+    public IRubyObject WritePrivateProfileString(ThreadContext context, IRubyObject[] args){
+
+        String section = args[0].asJavaString();
+        String key = args[1].asJavaString();
+        String val = args[2].asJavaString();
+        String filename = args[3].asJavaString();
+        JRGSSLogger.println(PEDANTIC,"Internal WritePrivateProfileString() : "+filename);
+
+        Wini ini = new Wini();
+        ini.getConfig().setLowerCaseOption(true); // make all options lower case to be more general
+        ini.getConfig().setLowerCaseSection(true); // make all sections lower case to be more general
+        try{
+            ini.load(new File(filename));
+            ini.put(section.toLowerCase(), key.toLowerCase(), val);
+            JRGSSLogger.println(DEBUG,"INI Write : "+val+" : "+filename);
+        }catch(Exception e){
+            JRGSSLogger.println(ERROR,"INI Write : "+filename);
+        }
+        return runtime.newFixnum(1);
     }
 
 }

@@ -34,14 +34,20 @@ import java.util.jar.JarFile;
  */
 public class JRGSSGame implements JRGSSApplicationListener {
     ScriptingContainer scriptingContainer;
-    //my problem might be that some of these classes are not modules
     final String[] BUILTINS = new String[] {
-            "JAudio", "Bitmap", "Graphics",
-            "Plane", "Rect", "RGSSError", "Sprite",
-            "Tilemap", "Tone", "Viewport", "Window",
-            "RGSSReset"
+        "JAudio",     //module
+        "Graphics",   //module
+        "Bitmap",     //class
+        "Plane",      //class
+        "Rect",       //class
+        "RGSSError",  //class
+        "Sprite",     //class
+        "Tilemap",    //class
+        "Tone",       //class
+        "Viewport",   //class
+        "Window",     //class
+        "RGSSReset"   //class
     };
-
     public static final Queue<FutureTask<?>> glRunnables = new ConcurrentLinkedQueue<>();
 
     static JRGSSMain mainBlock;
@@ -193,10 +199,46 @@ public class JRGSSGame implements JRGSSApplicationListener {
     //Load the Basic Engine classes that all games use
     //These are implemented as Java classes that JRuby pretends are Ruby classes
     //Perhaps there is something we can do to make it import as modules instead of classes?
+    //Perhaps we need to import some things as classes and some things as modules?
+    //   - need to look at the VXA official code to determine what to do
     public void loadRGSSModule(String name) {
         JRGSSLogger.println(DEBUG,"Embedding Java Class As Ruby Class : "+name);
-        scriptingContainer.runScriptlet("java_import org.jrgss.api."+name);
-        scriptingContainer.runScriptlet("class "+name+"\ndef _dump level\nself.dump\nend\nend");
+        // scriptingContainer.runScriptlet("java_import org.jrgss.api."+name);
+        // scriptingContainer.runScriptlet("class "+name+"\ndef _dump level\nself.dump\nend\nend");
+
+        scriptingContainer.runScriptlet(String.join("\n", //System.lineSeparator()
+            "require 'java'",
+            "java_import org.jrgss.api."+name,
+            "class << "+name,
+            "  def _dump level",
+            "    self.dump",
+            "  end",
+            "end"
+            ));
+
+
+        // scriptingContainer.runScriptlet(String.join("\n", //System.lineSeparator()
+        //     "require 'java'",
+        //     //"module "+name,
+        //     "module RPG",
+        //     "  java_import org.jrgss.api."+name,
+        //     "  class "+name,
+        //     "    def _dump level",
+        //     "      self.dump",
+        //     "    end",
+        //     "  end",
+        //     "end"
+        //     ));
+        // scriptingContainer.runScriptlet(String.join("\n", //System.lineSeparator()
+        //     "require 'java'",
+        //     "java_import org.jrgss.api."+name,
+        //     "module "+name,
+        //     //"  include_package org.jrgss.api."+name,
+        //     "  def _dump level",
+        //     "    self.dump",
+        //     "  end",
+        //     "end"
+        //     ));
     }
 
 
@@ -248,7 +290,7 @@ public class JRGSSGame implements JRGSSApplicationListener {
 
     public static void runWithGLContext(final Runnable runnable) {
         if(Thread.currentThread() == glThread) {
-            JRGSSLogger.println(DEBUG,"GL Context Setup - Thread starting");
+            JRGSSLogger.println(PEDANTIC,"GL Context Setup - Thread starting");
             runnable.run();
         } else {
             //FutureTask<?> task = new FutureTask<Object>(runnable, null);
@@ -279,7 +321,6 @@ public class JRGSSGame implements JRGSSApplicationListener {
         scriptingContainer.setCompatVersion(CompatVersion.RUBY1_9);
         scriptingContainer.setCompileMode(RubyInstanceConfig.CompileMode.OFF);
         scriptingContainer.setRunRubyInProcess(true);
-        //scriptingContainer.runScriptlet("$TEST=true");
         scriptingContainer.runScriptlet("require 'java'");
         scriptingContainer.runScriptlet("require 'org/jrgss/api/RGSSBuiltin'");
         for(String module: BUILTINS) {
