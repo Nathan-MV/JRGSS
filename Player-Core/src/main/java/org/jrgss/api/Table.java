@@ -24,16 +24,13 @@ import java.nio.ShortBuffer;
 @JRubyClass(name = "Table")
 public class Table extends RubyObject {
 
-
     static Ruby runtime;
     static RubyClass rubyClass;
-
 
     ShortBuffer values;
     int dim1;
     int dim2=1;
     int dim3=1;
-
 
     @JRubyMethod( module = true)
     public static IRubyObject _load(ThreadContext context, IRubyObject self, IRubyObject rubyObj) {
@@ -171,5 +168,10 @@ public class Table extends RubyObject {
         }
     }
 
-
+    @JRubyMethod()
+    public IRubyObject xsize(ThreadContext context){return runtime.newFixnum(dim1);}
+    @JRubyMethod()
+    public IRubyObject ysize(ThreadContext context){return runtime.newFixnum(dim2);}
+    @JRubyMethod()
+    public IRubyObject zsize(ThreadContext context){return runtime.newFixnum(dim3);}
 }

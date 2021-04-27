@@ -35,8 +35,8 @@ import java.util.jar.JarFile;
 public class JRGSSGame implements JRGSSApplicationListener {
     ScriptingContainer scriptingContainer;
     final String[] BUILTINS = new String[] {
-        "JAudio",     //module
-        "Graphics",   //module
+        "JAudio",     //Audio module
+        "Graphics",   //Graphics module
         "Bitmap",     //class
         "Plane",      //class
         "Rect",       //class
