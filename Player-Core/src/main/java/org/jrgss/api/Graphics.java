@@ -29,6 +29,9 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.stream.Collectors;
 
+import org.jrgss.JRGSSLogger;
+import static org.jrgss.JRGSSLogger.LogLevels.*;
+
 /**
  * Created by matty on 6/27/14.
  */
@@ -131,7 +134,7 @@ public class Graphics {
 
     public static void resize_screen(int width, int height) {
 
-        Gdx.app.log("Graphics", "Requested a larger screen size. " + width + "x" + height + ". Let's give it a shot!");
+        JRGSSLogger.println(INFO,"Requested a larger screen size. " + width + "x" + height + ". Let's give it a shot!");
         desiredHeight = height;
         desiredWidth = width;
         if(!fullscreen) {
@@ -143,7 +146,7 @@ public class Graphics {
             scale = (float)Gdx.graphics.getWidth()/width;
         } else {
             com.badlogic.gdx.Graphics.DisplayMode mode = Gdx.graphics.getDesktopDisplayMode();
-            Gdx.app.log("Graphics", "Fullscreen resolution is "+mode.width+"x"+mode.height);
+            JRGSSLogger.println(INFO,"Fullscreen resolution is "+mode.width+"x"+mode.height);
             if(!Gdx.graphics.isFullscreen()) {
                 Gdx.graphics.setDisplayMode(mode.width, mode.height, true);
                 updateDisplayParams(mode.width, mode.height);
@@ -152,7 +155,7 @@ public class Graphics {
 
         }
         if(scale < 0.01) scale = 1.0;
-        Gdx.app.log("Graphics", "We are now at "+getWidth() + "x"+getHeight()+"@"+scale);
+        JRGSSLogger.println(DEBUG,"We are now at "+getWidth() + "x"+getHeight()+"@"+scale);
     }
 
     private static void updateDisplayParams(int width, int height) {
@@ -370,7 +373,7 @@ public class Graphics {
     }
 
     public static void freeze() {
-        Gdx.app.log("Graphics", "Freeze called! Brightness is " + brightness);
+        JRGSSLogger.println(DEBUG,"Freeze called! Brightness is " + brightness);
         SpriteBatch batch = new SpriteBatch();
         batch.setProjectionMatrix(JRGSSGame.camera.combined);
         batch.setColor(1f, 1f, 1f, 1f);
@@ -388,9 +391,9 @@ public class Graphics {
     }
 
     public static void transition(int duration) {
-        Gdx.app.log("Graphics", "Transition called for duration " + duration);
+        JRGSSLogger.println(DEBUG,"Transition called for duration " + duration);
         if (backBuffer == null) {
-            Gdx.app.log("Graphics", "WARN: Calling transition without a freeze!");
+            JRGSSLogger.println(ERROR,"WARN: Calling transition without a freeze!");
             return;
         }
         brightness = 255;
@@ -412,7 +415,7 @@ public class Graphics {
 
     public static void transition(int duration, String filename, int vague) {
         if (backBuffer == null) {
-            Gdx.app.log("Graphics", "WARN: Calling transition without a freeze!");
+            JRGSSLogger.println(ERROR,"WARN: Calling transition without a freeze!");
             return;
         }
         if (duration < 2) {
@@ -439,7 +442,7 @@ public class Graphics {
     }
 
     public static void fadeout(int duration) {
-        Gdx.app.log("Graphics", "Fadeout Called with duration " + duration);
+        JRGSSLogger.println(DEBUG,"Fadeout Called with duration " + duration);
         float fadeStep = (255f / duration);
         for (int i = duration; i >= 0; i--) {
             brightness = (int) (i * fadeStep);
@@ -449,9 +452,9 @@ public class Graphics {
     }
 
     public static void fadein(int duration) {
-        Gdx.app.log("Graphics", "Fadein Called with duration " + duration);
+        JRGSSLogger.println(DEBUG,"Fadein Called with duration " + duration);
         float fadeStep = (255f / duration);
-        Gdx.app.log("Graphics", "fade Step = " + fadeStep);
+        JRGSSLogger.println(DEBUG,"    fade Step = " + fadeStep);
         for (int i = 0; i <= duration; i++) {
             brightness = (int) (i * fadeStep);
             update();
@@ -460,11 +463,11 @@ public class Graphics {
     }
 
     public static Bitmap snap_to_bitmap() {
-        Gdx.app.log("Graphics", "Called Snap to Bitmap!");
+        JRGSSLogger.println(DEBUG,"Called Snap to Bitmap!");
         tempBuffer.begin();
         byte[] bytes = ScreenUtils.getFrameBufferPixels(0,0,getWidth(), getHeight(),true);
         tempBuffer.end();
-        Gdx.app.log("Graphics", "got "+bytes.length+" pixels");
+        JRGSSLogger.println(DEBUG,"    got "+bytes.length+" pixels");
         Pixmap p = new Pixmap(getWidth(), getHeight(), Pixmap.Format.RGBA8888);
         p.getPixels().put(bytes).rewind();
 

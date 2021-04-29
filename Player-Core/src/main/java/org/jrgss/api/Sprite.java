@@ -9,6 +9,8 @@ import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import lombok.Data;
 import lombok.ToString;
 import org.jrgss.JRGSSGame;
+import org.jrgss.JRGSSLogger;
+import static org.jrgss.JRGSSLogger.LogLevels.*;
 
 /**
  * Created by matty on 6/27/14.
@@ -126,7 +128,7 @@ public class Sprite extends AbstractRenderable {
 
     public void dispose() {
         super.dispose();
-        Gdx.app.log("Sprite", "Dispose called");
+        JRGSSLogger.println(PEDANTIC,"Dispose called");
     }
 
     public void setX(int x) {
@@ -148,10 +150,10 @@ public class Sprite extends AbstractRenderable {
     @Override
     public void render(SpriteBatch _) {
         if(isDisposed()) {
-            Gdx.app.log("Sprite","Disposed, but still drawing! ");
+            JRGSSLogger.println(ERROR,"Disposed, but still drawing! ");
         }
         if (bitmap != null && visible && opacity > 0 && (viewport == null || (viewport.isVisible() && !viewport.isDisposed()))) {
-            //Gdx.app.log("Sprite", String.format("Rendering: %s, %d, %d, %d, %d", viewport, x, y, ox, oy));
+            JRGSSLogger.println(PEDANTIC, String.format("Rendering: %s, %d, %d, %d, %d", viewport, x, y, ox, oy));
             if(batch == null) {
                 batch = new SpriteBatch();
                 batch.setShader(getAlphaBlendingShader());
@@ -216,7 +218,7 @@ public class Sprite extends AbstractRenderable {
     }
 
     public void flash(Color color, int duration) {
-        Gdx.app.log("Sprite", "Flash!");
+        JRGSSLogger.println(DEBUG,"Flash! (not implemented to do anything)");
     }
 
     public int getWidth() {

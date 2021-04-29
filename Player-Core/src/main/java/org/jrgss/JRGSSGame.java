@@ -10,6 +10,8 @@ import org.jrgss.api.*;
 import org.jrgss.api.Graphics;
 import org.jrgss.api.win32.User32;
 import org.jrgss.rgssa.EncryptedArchive;
+import org.jrgss.JRGSSLogger;
+import static org.jrgss.JRGSSLogger.LogLevels.*;
 import org.jruby.*;
 import org.jruby.embed.LocalContextScope;
 import org.jruby.embed.LocalVariableBehavior;
@@ -32,14 +34,20 @@ import java.util.jar.JarFile;
  */
 public class JRGSSGame implements JRGSSApplicationListener {
     ScriptingContainer scriptingContainer;
-    //my problem might be that some of these classes are not modules
     final String[] BUILTINS = new String[] {
-            "JAudio", "Bitmap", "Graphics",
-            "Plane", "Rect", "RGSSError", "Sprite",
-            "Tilemap", "Tone", "Viewport", "Window",
-            "RGSSReset"
+        "JAudio",     //Audio module
+        "Graphics",   //Graphics module
+        "Bitmap",     //class
+        "Plane",      //class
+        "Rect",       //class
+        "RGSSError",  //class
+        "Sprite",     //class
+        "Tilemap",    //class
+        "Tone",       //class
+        "Viewport",   //class
+        "Window",     //class
+        "RGSSReset"   //class
     };
-
     public static final Queue<FutureTask<?>> glRunnables = new ConcurrentLinkedQueue<>();
 
     static JRGSSMain mainBlock;
@@ -55,10 +63,12 @@ public class JRGSSGame implements JRGSSApplicationListener {
 
     public JRGSSGame(String gameDirectory, String rtpDirectory, ConfigReader ini) {
         super();
+        JRGSSLogger.println(DEBUG,"Creating Game Engine Object");
         JRGSSGame.ini = ini; //Pretty shitty, but JRGSSGame should be a singleton
         FileUtil.setLocalDirectory(ini.getTitle());
         RGSSVersion rgss = ini.getRGSSVersion();
         if(rgss != RGSSVersion.VXAce) {
+            JRGSSLogger.println(ERROR,"RPGM Version of the game files is not equal to VXAce - issue maybe occur");
             int result = JOptionPane.showConfirmDialog(null, "This game uses an unsupported version of RGSS. This game is for "+
             rgss+" There may be some incompatibilities!",
             "Unsupported RGSS Version", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
@@ -77,81 +87,89 @@ public class JRGSSGame implements JRGSSApplicationListener {
                 System.err.println("Could not load archive!");
                 e.printStackTrace(System.err);
             }
+        }else{
+            JRGSSLogger.println(INFO,"Unable to find encrypted archive file Game.rgss3a - assuming the files are loose in a directory");
         }
-
-
     }
 
     public void loadScriptsFromDirectory(String path) {
+        JRGSSLogger.println(INFO,"Loading Scripts in directory : "+path);
         File[] fileList = new File(path).listFiles();
         File[] orderedList = new File[fileList.length];
         for(File f : fileList) {
             String fileName = f.getName();
+            JRGSSLogger.println(PEDANTIC,"FILENAME : "+fileName);
             String[] nameParts = fileName.split("@@__@@");
             orderedList[Integer.parseInt(nameParts[0])] = f;
         }
 
+        JRGSSLogger.println(PEDANTIC,"Loading Previously Found Scripts into JRuby");
         for(File f : orderedList) {
             try{
+                JRGSSLogger.println(PEDANTIC,"FILENAME : "+f.getName());
                 scriptingContainer.runScriptlet(new FileReader(f),f.getName().split("@@__@@")[1]);
             }catch(Exception e) {
+                JRGSSLogger.printBuffer();
                 throw new RuntimeException(e);
             }
         }
     }
 
+    //I think this is supposed to load a script from a rvdata2 file
     public void loadScriptData(String path) {
+        JRGSSLogger.println(INFO,"Loading Scripts From Data File : "+path);
         FileHandle f;
         if(FileUtil.archive != null) {
+            JRGSSLogger.println(DEBUG,"Opening file from compressed archive");
             f = FileUtil.archive.openFile(path);
         } else {
-            Gdx.app.log("JRGSSGame", "Separator is "+File.separator);
-            if(!File.separator.equals("\\")) {
+            JRGSSLogger.println(DEBUG,"Opening the loose file from the game directory, not archive");
+            JRGSSLogger.println(PEDANTIC,"Script data file path separator : "+File.separator);
+            if(!File.separator.equals("\\")) { // seems like a workaround for making these utils work on non-windows systems with the paths interanlly using windows style paths
                 path = path.replaceAll("\\\\", File.separator);
             }
             f = new FileHandle(FileUtil.gameDirectory + File.separator + path);
         }
+
+        //Read the whole file and let Ruby parse it out. It is an array of content.
         byte[] bytes = f.readBytes();
         RubyString str = RubyString.newString(Ruby.getGlobalRuntime(), bytes);
         RubyArray arr = (RubyArray)RubyMarshal.load(ThreadContext.newContext(Ruby.getGlobalRuntime()),
                 null,
                 new RubyObject[]{str},
                 null);
-        int index = 0;
-        scriptingContainer.put("$RGSS_SCRIPTS", arr);
+        scriptingContainer.put("$RGSS_SCRIPTS", arr); // store the array in Ruby under the variable name $RGSS_SCRIPTS
+
+        //We are now going to go through every index in the array and load the script data into Ruby
+        //each script is compressed so we will decompress it
+        //not every index will have content, but empty data should be safe to decompress and ask Ruby to evaluate
         for(Object o : arr) {
             RubyArray item = (RubyArray)o;
             String name = (String)item.get(1);
-            System.out.println(name);
-            scriptingContainer.put("$__obj", item);
+            JRGSSLogger.println(DEBUG,"    "+name);
+            scriptingContainer.put("$__obj", item); // temp variable to decompress with
             String str2 = (String)scriptingContainer.runScriptlet("Zlib::Inflate.inflate($__obj[2]).force_encoding(\"utf-8\")");
+            JRGSSLogger.println(PEDANTIC,str2); // MUHAHHA - You get ALL the scripts dumped to console if you really want to be pedantic
             try{
                 String script = "# encoding: UTF-8\n"+str2;//.replaceAll("\r\n","\n");
-
-                /*try(FileWriter writer = new FileWriter("/Users/matt/VidarScripts/"+index+"@@__@@"+name+".rb")) {
-                    writer.write("# encoding: UTF-8\n" + script);
-                }
-                System.out.println("Saving /Users/matt/VidarScripts/"+index+"@@__@@"+name+".rb");*/
                 scriptingContainer.setScriptFilename(name);
-                scriptingContainer.runScriptlet("# encoding: UTF-8\r\n" + script);
+                scriptingContainer.runScriptlet(script);
             }catch (Exception e) {
                 throw new RuntimeException(e);
             }
-            scriptingContainer.put("$__obj", null);
-            index++;
+            scriptingContainer.put("$__obj", null); // removing the variable since we are done decompressing
         }
     }
 
+    //This loads the .rb files from the resources/rpg/ folder and throws it into the Ruby runtime
     public void loadRPGModule() {
         try{
             String[] files = new File(JRGSSGame.class.getResource("/rpg/").toURI()).list();
+            JRGSSLogger.println(INFO,"Loading Ruby Files");
             for(String file : files) {
+                JRGSSLogger.println(DEBUG,"    "+file);
                 InputStream stream = JRGSSGame.class.getResourceAsStream("/rpg/"+file);
-
-                        /*new FileInputStream(new File(JRGSS_DIR+
-                        File.separator+"rpg"+File.separator+file));*/
                 scriptingContainer.runScriptlet(stream, file);
-                System.out.println("Loaded file "+file);
             }
         } catch(Exception e) {
             //We might be in a jar.
@@ -160,11 +178,12 @@ public class JRGSSGame implements JRGSSApplicationListener {
                 jarFileLocation = jarFileLocation.replace("%20", " ");
                 JarFile file = new JarFile(jarFileLocation);
                 Enumeration<JarEntry> entries = file.entries();
+                JRGSSLogger.println(INFO,"Loading Ruby Embedded Files");
                 while (entries.hasMoreElements()) {
                     JarEntry entry = entries.nextElement();
                     if (entry.getName().startsWith("rpg")) {
+                        JRGSSLogger.println(DEBUG,"    "+entry.getName());
                         scriptingContainer.runScriptlet(file.getInputStream(entry), entry.getName());
-                        System.out.println("Loaded file "+file);
                     }
                 }
             }catch(Exception e1) {
@@ -177,15 +196,56 @@ public class JRGSSGame implements JRGSSApplicationListener {
         mainBlock = rubyBlock;
     }
 
+    //Load the Basic Engine classes that all games use
+    //These are implemented as Java classes that JRuby pretends are Ruby classes
+    //Perhaps there is something we can do to make it import as modules instead of classes?
+    //Perhaps we need to import some things as classes and some things as modules?
+    //   - need to look at the VXA official code to determine what to do
     public void loadRGSSModule(String name) {
-        scriptingContainer.runScriptlet("java_import org.jrgss.api."+name);
-        scriptingContainer.runScriptlet("class "+name+"\ndef _dump level\nself.dump\nend\nend");
+        JRGSSLogger.println(DEBUG,"Embedding Java Class As Ruby Class : "+name);
+        // scriptingContainer.runScriptlet("java_import org.jrgss.api."+name);
+        // scriptingContainer.runScriptlet("class "+name+"\ndef _dump level\nself.dump\nend\nend");
+
+        scriptingContainer.runScriptlet(String.join("\n", //System.lineSeparator()
+            "require 'java'",
+            "java_import org.jrgss.api."+name,
+            "class << "+name,
+            "  def _dump level",
+            "    self.dump",
+            "  end",
+            "end"
+            ));
+
+
+        // scriptingContainer.runScriptlet(String.join("\n", //System.lineSeparator()
+        //     "require 'java'",
+        //     //"module "+name,
+        //     "module RPG",
+        //     "  java_import org.jrgss.api."+name,
+        //     "  class "+name,
+        //     "    def _dump level",
+        //     "      self.dump",
+        //     "    end",
+        //     "  end",
+        //     "end"
+        //     ));
+        // scriptingContainer.runScriptlet(String.join("\n", //System.lineSeparator()
+        //     "require 'java'",
+        //     "java_import org.jrgss.api."+name,
+        //     "module "+name,
+        //     //"  include_package org.jrgss.api."+name,
+        //     "  def _dump level",
+        //     "    self.dump",
+        //     "  end",
+        //     "end"
+        //     ));
     }
 
 
 
     @Override
     public void create() {
+        JRGSSLogger.println(DEBUG,"Creating a drawing context");
         if(SplashScreen.getSplashScreen()!=null) {
             SplashScreen.getSplashScreen().close();
         }
@@ -198,12 +258,11 @@ public class JRGSSGame implements JRGSSApplicationListener {
         Gdx.graphics.setVSync(true);
         batch = new SpriteBatch();
         batch.enableBlending();
-       // Graphics.initialize();
-
     }
 
     @Override
     public void resize(int width, int height) {
+        JRGSSLogger.println(DEBUG,"Game Resize : w"+width+" : h"+height);
         camera = new OrthographicCamera(Graphics.getWidth(), Graphics.getHeight());
         camera.setToOrtho(true, Graphics.getWidth(), Graphics.getHeight());
         camera.update();
@@ -211,9 +270,8 @@ public class JRGSSGame implements JRGSSApplicationListener {
 
     @Override
     public void render() {
-        //fpsLogger.log();
+        JRGSSLogger.println(PEDANTIC,"Game Render");
         update();
-        //Gdx.app.log("JRGSSGame", "$time is "+scriptingContainer.runScriptlet("$time.delta if $time"));
         batch.setProjectionMatrix(camera.combined);
         batch.setColor(1f,1f,1f,1f);
         //batch.begin();
@@ -222,22 +280,17 @@ public class JRGSSGame implements JRGSSApplicationListener {
     }
 
     @Override
-    public void pause() {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
+    public void pause() {}
 
     @Override
-    public void resume() {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
+    public void resume() {}
 
     @Override
-    public void dispose() {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
+    public void dispose() {}
 
     public static void runWithGLContext(final Runnable runnable) {
         if(Thread.currentThread() == glThread) {
+            JRGSSLogger.println(PEDANTIC,"GL Context Setup - Thread starting");
             runnable.run();
         } else {
             //FutureTask<?> task = new FutureTask<Object>(runnable, null);
@@ -249,7 +302,6 @@ public class JRGSSGame implements JRGSSApplicationListener {
     boolean buttonTrigger = false;
 
     public void update() {
-
         if(!buttonTrigger && Gdx.input.isKeyPressed(Input.Keys.F1)) {
 
             debugFrame.refresh();
@@ -258,32 +310,28 @@ public class JRGSSGame implements JRGSSApplicationListener {
         if(buttonTrigger && !Gdx.input.isKeyPressed(Input.Keys.F1)) {
             buttonTrigger = false;
         }
-
-
     }
 
     static boolean override = false;
 
     @Override
     public void loadScripts() {
+        JRGSSLogger.println(INFO,"Loading Game Scripts, Please Wait...");
         scriptingContainer = new ScriptingContainer(LocalContextScope.SINGLETON, LocalVariableBehavior.PERSISTENT);
         scriptingContainer.setCompatVersion(CompatVersion.RUBY1_9);
         scriptingContainer.setCompileMode(RubyInstanceConfig.CompileMode.OFF);
         scriptingContainer.setRunRubyInProcess(true);
-        //scriptingContainer.runScriptlet("$TEST=true");
         scriptingContainer.runScriptlet("require 'java'");
         scriptingContainer.runScriptlet("require 'org/jrgss/api/RGSSBuiltin'");
         for(String module: BUILTINS) {
             loadRGSSModule(module);
         }
 
-        loadRPGModule();
+        loadRPGModule(); // load the embedded .rb scripts in this project (shims and bootstrap)
         scriptingContainer.put("$_jrgss_home", FileUtil.gameDirectory);
         scriptingContainer.put("$_jrgss_paths", new String[]{FileUtil.localDirectory, FileUtil.gameDirectory});
         scriptingContainer.put("$_jrgss_os", System.getProperty("os.name"));
         loadScriptData(ini.getScripts());
-        //loadScriptsFromDirectory("/Users/matt/VidarScripts");
-
         //Gdx.app.log("JRGSSGame", scriptingContainer.runScriptlet("load_data(\"Data/Map101.rvdata2\")").toString());
     }
 

@@ -16,6 +16,9 @@ import org.jruby.RubyArray;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jrgss.JRGSSLogger;
+import static org.jrgss.JRGSSLogger.LogLevels.*;
+
 /**
  * Borrowed a lot of the auto-tiling from OpenRGSS (http://openrgss.org/)
  * Created by matt on 6/27/14.
@@ -156,8 +159,7 @@ public class Tilemap {
         for(int i = 0; i < 6; i++) {
             layers[i] = i!=5?new TileMapLayer(i):new ShadowLayer();
         }
-
-        Gdx.app.log("Tilemap", "New Tilemap has been created.");
+        JRGSSLogger.println(DEBUG,"New Tilemap has been created.");
     }
 
     private static boolean inRange(int[][] ranges, int data) {
@@ -196,8 +198,7 @@ public class Tilemap {
         for(TileMapLayer layer : layers) {
             layer.dispose();
         }
-
-        Gdx.app.log("Tilemap","Disposed of Tilemap");
+        JRGSSLogger.println(DEBUG,"Disposed of Tilemap");
     }
 
     public void setMap_data(Table data) {
@@ -207,9 +208,9 @@ public class Tilemap {
 
     public void setFlags(Table flags) {
         this.flags = flags;
-        Gdx.app.log("Tilemap", "Flags have "+flags.dim1+ " elements");
+        JRGSSLogger.println(DEBUG,"Flags have "+flags.dim1+ " elements");
         for(int x = 0; x < 6; x++) {
-            Gdx.app.log("Tilemap", "Flags are "+flags.get(map_data.get(x, 0, 2), 0, 0));
+            JRGSSLogger.println(DEBUG,"    "+flags.get(map_data.get(x, 0, 2), 0, 0));
         }
     }
 
@@ -322,7 +323,7 @@ public class Tilemap {
                     sy = 288 + (frame * 32);
                     break;
                 default:
-                    Gdx.app.log("Tilemap", "Unsupported Autotile value: " + autotile);
+                    JRGSSLogger.println(ERROR,"Unsupported Autotile value: " + autotile);
             }
             //newRegion = new TextureRegion(tilemap, sx, (tilemapHeight - 32) - sy, 32, 32);
 

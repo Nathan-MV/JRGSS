@@ -13,6 +13,9 @@ import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+import org.jrgss.JRGSSLogger;
+import static org.jrgss.JRGSSLogger.LogLevels.*;
+
 /**
  * Created by matty on 6/27/14.
  */
@@ -41,7 +44,7 @@ public class Tone implements Serializable {
         c.green = (int)colorLoader.getDouble();
         c.blue = (int)colorLoader.getDouble();
         c.gray = (int)colorLoader.getDouble();
-        Gdx.app.log("Tone", "Loaded Tone "+c);
+        JRGSSLogger.println(DEBUG,"Loaded Tone "+c);
         return c;
     }
 

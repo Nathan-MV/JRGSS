@@ -13,6 +13,8 @@ import lombok.ToString;
 import org.jrgss.JRGSSGame;
 import org.jrgss.Scissors;
 import org.jrgss.shaders.ToneShaderProgram;
+import org.jrgss.JRGSSLogger;
+import static org.jrgss.JRGSSLogger.LogLevels.*;
 
 /**
  * Created by matty on 6/27/14.
@@ -86,7 +88,7 @@ public class Window extends AbstractRenderable {
         this.windowskin = new Bitmap(width, height);
         this.contents = new Bitmap(width, height);
         this.cursor_rect = new Rect(0, 0, 0, 0);
-        Gdx.app.log("Window", "Window @ " + x + "," + y);
+        JRGSSLogger.println(DEBUG,"Window constructed @ " + x + "," + y);
         JRGSSGame.runWithGLContext(new Runnable() {
             @Override
             public void run() {
@@ -98,7 +100,7 @@ public class Window extends AbstractRenderable {
     }
 
     public void setWindowskin(final Bitmap bitmap) {
-        Gdx.app.log("Window", "Setting up window borders...");
+        JRGSSLogger.println(PEDANTIC,"Setting up window borders...");
         this.windowskin = bitmap;
         JRGSSGame.runWithGLContext(new Runnable() {
             @Override
@@ -143,7 +145,7 @@ public class Window extends AbstractRenderable {
     }
 
     public void setCursor_rect(Rect cursorRect) {
-        Gdx.app.log("Window", "Attempt to enable cursor. Rect is " + cursorRect);
+        JRGSSLogger.println(DEBUG,"Attempt to enable cursor. Rect is " + cursorRect);
         this.cursor_rect = cursorRect;
     }
 
@@ -152,8 +154,8 @@ public class Window extends AbstractRenderable {
     }
 
     public void setViewport(Viewport viewport) {
+        JRGSSLogger.println(DEBUG,"set Viewport @ " + viewport.toString());
         this.viewport = viewport;
-        Gdx.app.log("Window", "set Viewport @ " + viewport.toString());
     }
 
     public void setOpacity(int opacity) {
@@ -199,7 +201,7 @@ public class Window extends AbstractRenderable {
     @Override
     public void render(SpriteBatch _) {
         if (!visible || isClose() || (viewport != null && !viewport.isVisible())) return;
-        //Gdx.app.log("Window", "Drawing a window!");
+        JRGSSLogger.println(PEDANTIC,"Rendering A Window : "+this.toString());
         batch.setProjectionMatrix(JRGSSGame.camera.combined);
         batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
         batch.enableBlending();
@@ -213,7 +215,6 @@ public class Window extends AbstractRenderable {
         }
 
         float globalOpacity = (opacity / 255f);
-        //Gdx.app.log("Window", "rendering "+this.toString());
         if (viewport != null) viewport.begin(batch);
         batch.setShader(ToneShaderProgram.get());
         ToneShaderProgram.get().begin();

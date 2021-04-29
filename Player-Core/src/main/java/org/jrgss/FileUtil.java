@@ -16,6 +16,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import org.jrgss.JRGSSLogger;
+import static org.jrgss.JRGSSLogger.LogLevels.*;
+
 /**
  * @author matt
  * @date 7/4/14
@@ -33,7 +36,6 @@ public class FileUtil {
 
     public static void setLocalDirectory(String title) {
         String os = System.getProperty("os.name");
-        System.out.println("Running on "+os);
         if(os.contains("Mac")) {
             localDirectory = System.getProperty("user.home")+"/Library/Application Support/JRGSS/"+title+"/";
         } else if(os.contains("Windows") && System.getenv("APPDATA") != null) {
@@ -92,7 +94,7 @@ public class FileUtil {
                 if(f.exists()) return new FileHandle(f);
             }
         }
-        Gdx.app.log("FileUtil", "Tried to open "+path+" and failed.");
+        JRGSSLogger.println(ERROR,"Tried to open "+path+" and failed.");
         return null;
     }
 
@@ -111,7 +113,6 @@ public class FileUtil {
         if(path.startsWith(File.separator)) {
             File f = new File(caseInsensitiveLookup(path));
             if(f.exists()) {
-                //Gdx.app.log("FileUtil","Found "+path+" in Game folder.");
                 return new RubyString(Ruby.getGlobalRuntime(), Ruby.getGlobalRuntime().getString(), new FileHandle(f).readBytes());
             }
             return null;
@@ -128,7 +129,6 @@ public class FileUtil {
         }
         file = new File(caseInsensitiveLookup(gameDirectory + File.separator +path));
         if(file.exists()) {
-            //Gdx.app.log("FileUtil","Found "+path+" in Game folder.");
             return new RubyString(Ruby.getGlobalRuntime(), Ruby.getGlobalRuntime().getString(), new FileHandle(file).readBytes());
         }
         return null;
@@ -153,7 +153,6 @@ public class FileUtil {
             insensitiveFileNameCache.put(path, Optional.of(path));
             return path;
         }
-        //Gdx.app.log("FileUtil", "Looking up "+path);
         Path parent = caseInsensitiveLookupImpl(path.getParent());
         if(parent == null) {
             insensitiveFileNameCache.put(path, Optional.<Path>empty());

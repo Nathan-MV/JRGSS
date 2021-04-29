@@ -4,6 +4,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import org.jrgss.FileUtil;
+import org.jrgss.JRGSSLogger;
+import static org.jrgss.JRGSSLogger.LogLevels.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,20 +26,21 @@ public class JAudio {
 
     static Map<String, Sound> se_cache = new HashMap<>();
 
+    //========================================================
+    // BGM
     public static void bgm_play(String filename) {
         bgm_play(filename, 100, 100, 0);
     }
-
     public static void bgm_play(String filename, int volume) {
         bgm_play(filename, volume, 100, 0);
     }
-
     public static void bgm_play(String filename, int volume, int pitch) {
         bgm_play(filename, volume, pitch, 0);
     }
-
     public synchronized static void bgm_play(String filename, int volume, int pitch, int pos) {
-        Gdx.app.log("Audio", "Play BGM "+filename+" @ volume ="+ volume+", pitch ="+pitch+", pos = "+pos);
+        JRGSSLogger.println(INFO,"Play BGM "+filename+" @ volume ="+ volume+", pitch ="+pitch+", pos = "+pos);
+        if(volume == 0)
+            JRGSSLogger.println(INFO,"BGM Requested Volume is 0 : "+filename);
 
         if(bgm != null && !bgmFilename.equals(filename)) {
             bgm_stop();
@@ -55,7 +58,22 @@ public class JAudio {
         bgm.setVolume(Math.min(1.0f,volume/100f));
 
     }
+    public static void bgm_stop() {
+        if(bgm != null) {
+            bgm.stop();
+            bgm.dispose();
+            bgm = null;
+        }
+    }
+    public static void bgm_fade(int millis) {
+        bgm_stop();
+    }
+    public static int bgm_pos() {
+        return 0;
+    }
 
+    //========================================================
+    // BGS
     public static void bgs_play(String filename) {
         bgs_play(filename, 100, 100, 0);
     }
@@ -69,10 +87,13 @@ public class JAudio {
     }
 
     public synchronized static void bgs_play(String filename, int volume, int pitch, int pos) {
+        JRGSSLogger.println(INFO,"Play BGS "+filename+" @ volume ="+ volume+", pitch ="+pitch+", pos = "+pos);
+        if(volume == 0)
+            JRGSSLogger.println(ERROR,"BGS Requested Volume is 0 : "+filename);
+
         if(bgs != null) {
             bgs_stop();
         }
-        Gdx.app.log("Audio", "Play BGS "+filename+" @ volume ="+ volume+", pitch ="+pitch+", pos = "+pos);
         bgs = Gdx.audio.newMusic(FileUtil.loadAudio(filename));
         bgs.setLooping(true);
         bgs.setVolume(volume/100f);
@@ -82,16 +103,33 @@ public class JAudio {
             }
         }
     }
+    public static int bgs_pos() {
+        return 0;
+    }
+    public static void bgs_stop() {
+        if(bgs != null) {
+            bgs.stop();
+            bgs.dispose();
+            bgs = null;
+        }
+    }
+    public static void bgs_fade(int millis) {
+        bgs_stop();
+    }
 
+    //========================================================
+    // ME
     public static void me_play(String filename) {
         me_play(filename, 100,100);
     }
-
     public static void me_play(String filename, int volume) {
         me_play(filename, volume, 100);
     }
-
     public synchronized static void me_play(String filename, int volume, int pitch) {
+        JRGSSLogger.println(INFO,"Play ME "+filename+" @ volume ="+ volume+", pitch ="+pitch);
+        if(volume == 0)
+            JRGSSLogger.println(ERROR,"ME Requested Volume is 0 : "+filename);
+
         if(bgm != null) {
             bgm.pause();
         }
@@ -112,65 +150,43 @@ public class JAudio {
         }
         mePlaying = true;
     }
+    public static void me_stop() {
+        if(me != null) {
+            me.stop();
+            me.dispose();
+            me = null;
+        }
+    }
+    public static void me_fade(int millis) {
+        me_stop();
+    }
 
+    //========================================================
     public static void se_play(String filename) {
         se_play(filename, 100, 100);
     }
-
     public static void se_play(String filename, int volume) {
         se_play(filename, volume, 100);
     }
-
     public synchronized static void se_play(String filename, int volume, int pitch) {
-        Gdx.app.log("Audio", "Play SE "+filename+" @ volume ="+ volume+", pitch ="+pitch);
-        Sound se = se_cache.get(filename);
-        if(se == null) {
-            se = Gdx.audio.newSound(FileUtil.loadAudio(filename));
-            se_cache.put(filename, se);
+        JRGSSLogger.println(INFO,"Play SE "+filename+" @ volume ="+ volume+", pitch ="+pitch);
+        if(volume == 0)
+            JRGSSLogger.println(ERROR,"SE Requested Volume is 0 : "+filename);
+
+        Sound newSe = se_cache.get(filename);
+        if(newSe == null) {
+            newSe = Gdx.audio.newSound(FileUtil.loadAudio(filename));
+            se_cache.put(filename, newSe);
         }
-        JAudio.se = se;
+        se = newSe;
         synchronized (sync) {
             se.play(volume / 100f, pitch / 100f, 0);
         }
 
     }
-
     public static void se_stop() {
-        se.stop();
+        if(se != null)
+            se.stop();
     }
-
-    public static void bgm_fade(int millis) {
-        bgm_stop();
-    }
-
-    public static void bgm_stop() {
-        if(bgm != null) {
-            bgm.stop();
-            bgm.dispose();
-            bgm = null;
-        }
-    }
-
-    public static int bgm_pos() {
-        return 0;
-    }
-
-    public static int bgs_pos() {
-        return 0;
-    }
-
-
-
-    public static void bgs_stop() {
-        if(bgs != null) {
-            bgs.stop();
-            bgs.dispose();
-            bgs = null;
-        }
-    }
-    public static void me_stop() {}
-
-    public static void bgs_fade(int millis) {}
-    public static void me_fade(int millis) {}
 
 }

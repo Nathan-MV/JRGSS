@@ -13,6 +13,9 @@ import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jrgss.JRGSSLogger;
+import static org.jrgss.JRGSSLogger.LogLevels.*;
+
 /**
  * @author matt
  * @date 8/19/14
@@ -33,9 +36,9 @@ public class EncryptedArchive {
             if(RGSSAV3[i] != buffer.get()) throw new IOException("Invalid RGSSAD v3 file!");
         }
         key = buffer.getInt();
-        System.out.println("Key is "+Integer.toHexString(key));
         key = (key*9) + 3;
-        System.out.println("Offset is "+buffer.position());
+        JRGSSLogger.println(INFO,"Encryption Key is "+Integer.toHexString(key));
+        JRGSSLogger.println(INFO,"Data Offset is "+buffer.position());
         ArchivedFile file;
         while((file = getFileInfoFromTOC(buffer)) != null) {
             files.put(file.name.toLowerCase(), file);
@@ -48,7 +51,7 @@ public class EncryptedArchive {
         ByteBuffer fileBuffer = buffer.duplicate();
         fileBuffer.position(f.offset);
         fileBuffer.limit(f.offset+f.size);
-        System.out.println(fileBuffer.remaining());
+        JRGSSLogger.println(PEDANTIC,"Remaining Data In Encrypted Archive : "+fileBuffer.remaining());
         return new EncryptedFileHandle(fileBuffer, f);
     }
 

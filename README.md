@@ -19,7 +19,15 @@ Contributions are welcome!
 
 ## Status
 
-Still a work in progress, but many features are supported. Focus is on supporting Vanilla RPG Maker VX Ace games, but adding support for additional scripts as feasible. User friendly version is forthcoming.
+Still a work in progress, but many features are supported.
+
+This fork of the project is an attempt to clean off some of the rough edges of the original as well as support more extended VXA games. The original version was aiming for only "Vanilla Plus" style games, where they do not override the built-in modules provided by the game engine.
+
+Check out [the todo list](TODO.md) to see what will be worked on.
+
+## Usage
+
+If you are building from this repo on linux, then you should only need to run the build.sh script and get a usable jar file in the folder "/target/". It currently takes 2 parameters on the command line: The game directory, and the RTP directory.
 
 Some Examples:
 

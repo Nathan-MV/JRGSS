@@ -10,6 +10,8 @@ import lombok.Data;
 import org.jrgss.JRGSSGame;
 import org.jrgss.Scissors;
 import org.jrgss.shaders.ToneShaderProgram;
+import org.jrgss.JRGSSLogger;
+import static org.jrgss.JRGSSLogger.LogLevels.*;
 
 /**
  * Created by matty on 6/27/14.
@@ -112,7 +114,7 @@ public class Viewport extends AbstractRenderable {
     }
 
     public void flash(Color color, int duration) {
-        Gdx.app.log("Viewport", String.format("Flash %s for %d", color, duration));
+        JRGSSLogger.println(INFO, String.format("Flash %s for %d", color, duration));
         flashColor = color;
         flashCounter = duration;
     }

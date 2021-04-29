@@ -12,6 +12,9 @@ import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
+import org.jrgss.JRGSSLogger;
+import static org.jrgss.JRGSSLogger.LogLevels.*;
+
 /**
  * @author matt
  * @date 7/2/14
@@ -53,10 +56,10 @@ public abstract class AbstractRenderable implements Comparable<AbstractRenderabl
             AbstractRenderable renderable = reference.get();
             if(renderable != null) {
                 renderable.dispose();
-                Gdx.app.log("AbstractRenderable", "Disposing of " + reference.id+". Was able to clean up!");
+                JRGSSLogger.println(DEBUG,"Disposing of " + reference.id+". Was able to clean up!");
             }
             else if(renderQueue.containsKey(reference.id)) {
-                Gdx.app.log("AbstractRenderable", "Disposing of " + reference.id);
+                JRGSSLogger.println(DEBUG,"Disposing of " + reference.id);
                 renderQueue.remove(reference.id);
             }
         }
@@ -64,7 +67,7 @@ public abstract class AbstractRenderable implements Comparable<AbstractRenderabl
 
     protected synchronized void addToRenderQueue() {
         if(this instanceof Window) {
-            Gdx.app.log("AbstractRenderable","Adding Window to queue: "+toString());
+            JRGSSLogger.println(DEBUG,"Adding Window to queue: "+toString());
         }
         WeakReference<AbstractRenderable> renderableWeakReference = new RenderableReference(this, referenceQueue);
         renderQueue.put(creationTime, renderableWeakReference);

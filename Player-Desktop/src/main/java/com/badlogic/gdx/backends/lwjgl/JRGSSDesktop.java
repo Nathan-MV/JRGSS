@@ -12,6 +12,8 @@ import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
 import org.jrgss.JRGSSApplication;
 import org.jrgss.JRGSSApplicationListener;
+import org.jrgss.JRGSSLogger;
+import static org.jrgss.JRGSSLogger.LogLevels.*;
 import org.jrgss.api.*;
 import org.jrgss.api.Graphics;
 import org.lwjgl.BufferUtils;
@@ -45,6 +47,7 @@ public class JRGSSDesktop extends LwjglApplication implements JRGSSApplication{
 
     public JRGSSDesktop(JRGSSApplicationListener listener, LwjglApplicationConfiguration config) {
         this(listener, config, new LwjglGraphics(config));
+        JRGSSLogger.println(DEBUG,"Seting up Application Window");
     }
 
     public JRGSSDesktop(JRGSSApplicationListener listener, Canvas canvas) {
@@ -73,23 +76,28 @@ public class JRGSSDesktop extends LwjglApplication implements JRGSSApplication{
     Thread audioUpdateThread = new Thread(new Runnable() {
         @Override
         public void run() {
+            JRGSSLogger.println(DEBUG,"Starting Audio Thread");
             while(!killAudio) {
+                JRGSSLogger.println(PEDANTIC,"Audio Loop");
                 if (audio != null) {
                     synchronized (org.jrgss.api.JAudio.class) {
                         audio.update();
-
                     }
-
                 }
                 try {
                     Thread.sleep(16);
-                }catch (Exception e){}
+                }catch (Exception e){
+                    JRGSSLogger.println(PEDANTIC,"Audio Loop ERROR");
+                }
             }
+            JRGSSLogger.println(DEBUG,"Exiting Audio Thread");
         }
     });
 
     @Override
     void mainLoop() {
+        JRGSSLogger.println(DEBUG,"Setting Up Main Loop");
+
         Array<LifecycleListener> lifecycleListeners = this.lifecycleListeners;
         while(jrgssApplicationListener == null) {
             try{
@@ -101,6 +109,7 @@ public class JRGSSDesktop extends LwjglApplication implements JRGSSApplication{
             graphics.setupDisplay();
             Graphics.init();
         } catch (LWJGLException e) {
+            JRGSSLogger.printBuffer();
             throw new GdxRuntimeException(e);
         }
 
@@ -117,12 +126,15 @@ public class JRGSSDesktop extends LwjglApplication implements JRGSSApplication{
         audioUpdateThread.setDaemon(true);
         audioUpdateThread.start();
         try{
+            JRGSSLogger.println(DEBUG,"Executing Main Loop");
             jrgssApplicationListener.getMain().main();
         }catch(Exception e) {
-            JOptionPane.showMessageDialog(Display.getParent(), "Unexpected Error: "+e.getMessage(), "Error",JOptionPane.ERROR_MESSAGE);
+            JRGSSLogger.printBuffer();
             e.printStackTrace(System.err);
+            JOptionPane.showMessageDialog(Display.getParent(), "Unexpected Error: "+e.getMessage(), "Error",JOptionPane.ERROR_MESSAGE);
         }
 
+        JRGSSLogger.println(DEBUG,"Closing Down Display Window");
         synchronized (lifecycleListeners) {
             for (LifecycleListener listener : lifecycleListeners) {
                 listener.pause();
@@ -139,7 +151,10 @@ public class JRGSSDesktop extends LwjglApplication implements JRGSSApplication{
         listener.dispose();
         Display.destroy();
         if (audio != null) audio.dispose();
-        if (graphics.config.forceExit) System.exit(-1);
+        if (graphics.config.forceExit){
+            JRGSSLogger.println(DEBUG,"graphics.config.forcedExit is true - exiting now");
+            System.exit(-1);
+        }
     }
 
     int lastWidth;
@@ -148,6 +163,7 @@ public class JRGSSDesktop extends LwjglApplication implements JRGSSApplication{
 
     @Override
     public void exit() {
+        JRGSSLogger.println(DEBUG,"Display Exit Function Called - closing down");
         synchronized (lifecycleListeners) {
             for (LifecycleListener listener : lifecycleListeners) {
                 listener.pause();
@@ -163,11 +179,13 @@ public class JRGSSDesktop extends LwjglApplication implements JRGSSApplication{
 
     @Override
     public void handlePlatform() {
+        JRGSSLogger.println(PEDANTIC,"Platform specific code being run");
         Display.processMessages();
         if (Display.isCloseRequested()) exit();
 
         boolean isActive = Display.isActive();
         if (wasActive && !isActive) { // if it's just recently minimized from active state
+            JRGSSLogger.println(DEBUG,"Window Minimized - Pausing All Operations");
             wasActive = false;
             synchronized (lifecycleListeners) {
                 for (LifecycleListener listener : lifecycleListeners)
@@ -176,6 +194,7 @@ public class JRGSSDesktop extends LwjglApplication implements JRGSSApplication{
             listener.pause();
         }
         if (!wasActive && isActive) { // if it's just recently focused from minimized state
+            JRGSSLogger.println(DEBUG,"Window Being Displayed - Unpausing all Operations");
             wasActive = true;
             listener.resume();
             synchronized (lifecycleListeners) {
@@ -190,6 +209,7 @@ public class JRGSSDesktop extends LwjglApplication implements JRGSSApplication{
             int width = graphics.canvas.getWidth();
             int height = graphics.canvas.getHeight();
             if (lastWidth != width || lastHeight != height) {
+                JRGSSLogger.println(DEBUG,"Resizing Canvas : w"+lastWidth+" : h"+lastHeight);
                 lastWidth = width;
                 lastHeight = height;
                 Gdx.gl.glViewport(0, 0, lastWidth, lastHeight);
@@ -206,6 +226,7 @@ public class JRGSSDesktop extends LwjglApplication implements JRGSSApplication{
                 graphics.config.width = Display.getWidth();
                 graphics.config.height = Display.getHeight();
                 if (listener != null) listener.resize(Display.getWidth(), Display.getHeight());
+                JRGSSLogger.println(DEBUG,"Resizing Graphics : w"+graphics.config.width+" : h"+graphics.config.height);
                 graphics.requestRendering();
             }
         }

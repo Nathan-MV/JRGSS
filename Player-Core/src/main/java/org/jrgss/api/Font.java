@@ -5,6 +5,8 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import static org.jrgss.api.win32.Win32Util.*;
+import org.jrgss.JRGSSLogger;
+import static org.jrgss.JRGSSLogger.LogLevels.*;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -220,7 +222,7 @@ public class Font extends RubyObject{
 
     @JRubyMethod(name="color=", required = 1)
     public IRubyObject colorSet(IRubyObject arg) {
-        Gdx.app.log("Font", "Set color to "+arg);
+        JRGSSLogger.println(DEBUG,"Set color to "+arg);
         return this.color = (Color)arg;
     }
 
@@ -238,15 +240,14 @@ public class Font extends RubyObject{
             bitmapFont = cached[0];
             outlineFont = cached[1];
         } else {
-            Gdx.app.log("Font", "Generating new font");
+            JRGSSLogger.println(DEBUG,"Generating new font");
             JRGSSGame.runWithGLContext(() -> {
                 FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.absolute(fontPath));
 
                 FreeTypeFontGenerator.FreeTypeFontParameter param = new FreeTypeFontGenerator.FreeTypeFontParameter();
                 param.size = (int)(size*(0.833));
 
-
-                Gdx.app.log("Font", String.format("%d versus %d", param.size, size));
+                JRGSSLogger.println(DEBUG, String.format("    %d versus %d", param.size, size));
 
                 param.flip = true;
                 param.genMipMaps = true;
