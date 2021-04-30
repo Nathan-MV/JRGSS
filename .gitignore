@@ -12,3 +12,4 @@
 target/
 */.libs/*
 *.code-workspace
+dependency-reduced-pom.xml
