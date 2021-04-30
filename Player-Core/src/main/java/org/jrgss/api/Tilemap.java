@@ -3,6 +3,7 @@ package org.jrgss.api;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import lombok.AllArgsConstructor;
@@ -478,9 +479,22 @@ public class Tilemap {
 
     @ToString(callSuper = true)
     private class ShadowLayer extends TileMapLayer {
+        Texture colorTexture;
 
         public ShadowLayer() {
             super(5);
+        }
+
+        public Texture getColorTexture() {
+            if (colorTexture == null) {
+                JRGSSLogger.println(PEDANTIC,"colorTexture is null");
+                Pixmap p = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+                p.setColor(1f, 1f, 1f, 1f);
+                p.fill();
+                colorTexture = new Texture(p);
+                p.dispose();
+            }
+            return colorTexture;
         }
 
         @Override
@@ -493,16 +507,16 @@ public class Tilemap {
                     Short tile = map_data.get(x, y, 3);
                     if(tile != 0) {
                         if((tile&0b1) != 0) {
-                            batch.draw(Sprite.getColorTexture(), (x * 32) - ox, (y * 32) - oy, 16, 16);
+                            batch.draw(getColorTexture(), (x * 32) - ox, (y * 32) - oy, 16, 16);
                         }
                         if((tile&0b10) != 0) {
-                            batch.draw(Sprite.getColorTexture(), (x * 32) - ox + 16, (y * 32) - oy, 16, 16);
+                            batch.draw(getColorTexture(), (x * 32) - ox + 16, (y * 32) - oy, 16, 16);
                         }
                         if((tile&0b100) != 0) {
-                            batch.draw(Sprite.getColorTexture(), (x * 32) - ox, (y * 32) - oy + 16, 16, 16);
+                            batch.draw(getColorTexture(), (x * 32) - ox, (y * 32) - oy + 16, 16, 16);
                         }
                         if((tile&0b1000) != 0) {
-                            batch.draw(Sprite.getColorTexture(), (x * 32) - ox + 16, (y * 32) - oy + 16, 16, 16);
+                            batch.draw(getColorTexture(), (x * 32) - ox + 16, (y * 32) - oy + 16, 16, 16);
                         }
                     }
                 }

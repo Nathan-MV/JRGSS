@@ -290,11 +290,11 @@ public class JRGSSGame implements JRGSSApplicationListener {
 
     public static void runWithGLContext(final Runnable runnable) {
         if(Thread.currentThread() == glThread) {
-            JRGSSLogger.println(PEDANTIC,"GL Context Setup - Thread starting");
+            JRGSSLogger.println(PEDANTIC,"Running function in GL thread");
             runnable.run();
         } else {
-            //FutureTask<?> task = new FutureTask<Object>(runnable, null);
             Gdx.app.postRunnable(runnable);
+            JRGSSLogger.println(PEDANTIC,"Running function in GL Thread when runtime gets to it");
         }
     }
 

@@ -36,6 +36,7 @@ public class Bitmap {
     int width;
     int height;
     FrameBuffer frameBuffer;
+    Texture colorTexture;
     TextureRegion region;
     Pixmap pixmap;
     OrthographicCamera camera;
@@ -63,6 +64,7 @@ public class Bitmap {
         this.height = img.getHeight();
         this.camera = new OrthographicCamera(width, height);
         this.camera.setToOrtho(true, width, height);
+        runWithGLContext(() ->{getColorTexture();});
     }
 
     public Bitmap(String path) {
@@ -96,6 +98,7 @@ public class Bitmap {
         endTime = System.currentTimeMillis();
         this.camera = new OrthographicCamera(width, height);
         this.camera.setToOrtho(true, width, height);
+        runWithGLContext(() ->{getColorTexture();});
     }
 
     public Bitmap(final int width, final int height) {
@@ -117,6 +120,7 @@ public class Bitmap {
             batch = new SpriteBatch();
         });
         clear();
+        runWithGLContext(() ->{getColorTexture();});
     }
 
     public static int clamp(int x, int a, int b) {
@@ -429,6 +433,18 @@ public class Bitmap {
         fill_rect(rect.x, rect.y, rect.width, rect.height, color);
     }
 
+    public Texture getColorTexture() {
+        if (colorTexture == null) {
+            JRGSSLogger.println(PEDANTIC,"colorTexture is null");
+            Pixmap p = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+            p.setColor(1f, 1f, 1f, 1f);
+            p.fill();
+            colorTexture = new Texture(p);
+            p.dispose();
+        }
+        return colorTexture;
+    }
+
     public void fill_rect(final int x, final int y, final int width, final int height, final Color color) {
         runWithGLContext(() -> {
             batch.disableBlending();
@@ -436,7 +452,7 @@ public class Bitmap {
             frameBuffer.begin();
             batch.begin();
             batch.setColor(color.toGDX());
-            batch.draw(Sprite.getColorTexture(), x, y, width, height);
+            batch.draw(getColorTexture(), x, y, width, height);
             batch.end();
             batch.enableBlending();
             frameBuffer.end();
@@ -465,7 +481,7 @@ public class Bitmap {
             frameBuffer.begin();
             batch.begin();
             batch.setColor(0f, 0f, 0f, 0f);
-            batch.draw(Sprite.getColorTexture(), x, y, width, height);
+            batch.draw(getColorTexture(), x, y, width, height);
             batch.end();
             batch.enableBlending();
             frameBuffer.end();
@@ -501,9 +517,9 @@ public class Bitmap {
                 Gdx.gl.glClearColor(0, 0, 0, 0f);
                 Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
                 frameBuffer.end();
+                pixmap = null;
             }
         });
-        pixmap = null;
     }
 
     public Color get_pixel(int x, int y) {
@@ -520,8 +536,8 @@ public class Bitmap {
             batch.draw(texture, x, y);
             batch.end();
             frameBuffer.end();
+            pixmap = null;
         });
-        pixmap = null;
     }
 
     SpriteBatch batch;
@@ -602,8 +618,8 @@ public class Bitmap {
             } else {
                 path += string;
             }
+            pixmap = null;
         });
-        pixmap = null;
 
     }
 

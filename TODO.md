@@ -15,6 +15,7 @@
 * Redirect all ruby prints to the logging class at INFO level so we are not spamming the console
 * Run through the documentation pages in VXA and make sure all methods mentioned are implemented
 	* the Table.xsize parameter was obviously missed, so other things are likely missing as well
+	* Also make the shim layer for the Graphics module, similar to the Audio module
 
 
 # Stretch Goals

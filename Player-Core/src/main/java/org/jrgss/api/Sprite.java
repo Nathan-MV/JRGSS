@@ -18,7 +18,6 @@ import static org.jrgss.JRGSSLogger.LogLevels.*;
 @Data
 @ToString(callSuper = true)
 public class Sprite extends AbstractRenderable {
-    public static Texture colorTexture;
     public static ShaderProgram alphaBlendingShader = null;
     Bitmap bitmap;
     Rect src_rect = new Rect();
@@ -44,6 +43,7 @@ public class Sprite extends AbstractRenderable {
         JRGSSGame.runWithGLContext(new Runnable() {
             @Override
             public void run() {
+                JRGSSLogger.println(PEDANTIC,"Generating Blank Sprite");
                 batch = new SpriteBatch();
                 batch.setProjectionMatrix(JRGSSGame.camera.combined);
                 batch.setShader(getAlphaBlendingShader());
@@ -62,17 +62,6 @@ public class Sprite extends AbstractRenderable {
                 batch.setShader(getAlphaBlendingShader());
             }
         });
-    }
-
-    public static Texture getColorTexture() {
-        if (colorTexture == null) {
-            Pixmap p = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-            p.setColor(1f, 1f, 1f, 1f);
-            p.fill();
-            colorTexture = new Texture(p);
-            p.dispose();
-        }
-        return colorTexture;
     }
 
     public static ShaderProgram getAlphaBlendingShader() {
@@ -170,10 +159,6 @@ public class Sprite extends AbstractRenderable {
             setShaderTone(tone);
 
             switch (blend_type) {
-                case 0:
-                    Gdx.gl.glBlendEquation(GL20.GL_FUNC_ADD);
-                    batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-                    break;
                 case 1:
                     Gdx.gl.glBlendEquation(GL20.GL_FUNC_ADD);
                     batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE);
@@ -181,6 +166,11 @@ public class Sprite extends AbstractRenderable {
                 case 2:
                     batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE);
                     Gdx.gl.glBlendEquation(GL20.GL_FUNC_REVERSE_SUBTRACT);
+                    break;
+                case 0:
+                default:
+                    Gdx.gl.glBlendEquation(GL20.GL_FUNC_ADD);
+                    batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
                     break;
             }
             batch.begin();

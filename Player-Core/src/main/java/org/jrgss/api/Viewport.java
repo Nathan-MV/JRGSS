@@ -2,6 +2,7 @@ package org.jrgss.api;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
@@ -30,6 +31,7 @@ public class Viewport extends AbstractRenderable {
     Color flashColor = null;
 
     FrameBuffer tempBuffer;
+    Texture colorTexture;
 
     public Viewport() {
         this.rect.set(0, 0, Graphics.getWidth(), Graphics.getHeight());
@@ -58,6 +60,17 @@ public class Viewport extends AbstractRenderable {
         Scissors.popScissors();
 
     }
+    public Texture getColorTexture() {
+        if (colorTexture == null) {
+            JRGSSLogger.println(PEDANTIC,"colorTexture is null");
+            Pixmap p = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+            p.setColor(1f, 1f, 1f, 1f);
+            p.fill();
+            colorTexture = new Texture(p);
+            p.dispose();
+        }
+        return colorTexture;
+    }
 
     @Override
     public void render(SpriteBatch batch) {
@@ -65,14 +78,14 @@ public class Viewport extends AbstractRenderable {
             batch.setColor(flashColor.getRed() / 255f, flashColor.getGreen() / 255f, flashColor.getBlue() / 255f, flashColor.getAlpha() / 255f);
             batch.enableBlending();
             batch.begin();
-            batch.draw(Sprite.getColorTexture(), rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight());
+            batch.draw(getColorTexture(), rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight());
             batch.end();
         }
         if(color != null && color.getAlpha() != 0) {
             batch.setColor(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, color.getAlpha() / 255f);
             batch.enableBlending();
             batch.begin();
-            batch.draw(Sprite.getColorTexture(), rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight());
+            batch.draw(getColorTexture(), rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight());
             batch.end();
         }
 

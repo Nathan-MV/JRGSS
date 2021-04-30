@@ -81,6 +81,7 @@ public class Graphics {
     private static int height = 0;
     public static boolean fullscreen = false;
     public static double scale = 1;
+    public static Texture colorTexture;
 
 
 
@@ -254,6 +255,17 @@ public class Graphics {
     private static long lastFrame = 0;
     private static SpriteBatch finalBatch;
 
+    public static Texture getColorTexture() {
+        if (colorTexture == null) {
+            JRGSSLogger.println(PEDANTIC,"colorTexture is null");
+            Pixmap p = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+            p.setColor(1f, 1f, 1f, 1f);
+            p.fill();
+            colorTexture = new Texture(p);
+            p.dispose();
+        }
+        return colorTexture;
+    }
 
     public static void render(SpriteBatch batch) {
 
@@ -338,7 +350,7 @@ public class Graphics {
 
             if (brightness != 255) {
                 finalBatch.setColor(0f, 0f, 0f, (255f - brightness) / 255f);
-                finalBatch.draw(Sprite.getColorTexture(), x, y,
+                finalBatch.draw(getColorTexture(), x, y,
                         width, height);
                 finalBatch.setColor(1f, 1f, 1f, 1f);
             }
