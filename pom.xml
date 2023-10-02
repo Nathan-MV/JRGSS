@@ -32,7 +32,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>28.2-jre</version>
+            <version>32.1.2-jre</version>
         </dependency>
         <dependency>
             <groupId>com.badlogicgames.gdx</groupId>
@@ -94,7 +94,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>2.3</version>
+                <version>3.5.1</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -115,12 +115,12 @@
 
             <plugin>
                 <artifactId>maven-antrun-plugin</artifactId>
-                <version>1.7</version>
+                <version>3.1.0</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
                         <configuration>
-                            <tasks>
+                            <target>
                                 <taskdef name="bundleapp"
                                          classname="com.oracle.appbundler.AppBundlerTask"
                                          classpath="util/appbundler-1.0.jar"/>
@@ -135,7 +135,7 @@
                                     <argument value="$APP_ROOT/Resources/JRGSS"/>
                                     <classpath file="target/Desktop-1.0-SNAPSHOT.jar"/>
                                 </bundleapp>
-                            </tasks>
+                            </target>
                         </configuration>
                         <goals>
                             <goal>run</goal>
